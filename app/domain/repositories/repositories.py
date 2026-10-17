@@ -1,6 +1,7 @@
 
 from abc import ABC, abstractmethod
 from uuid import UUID
+from typing import Any
 
 from app.domain.entities import entities
 
@@ -73,15 +74,15 @@ class TaskRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def list_tasks(self, *, user_id: UUID) -> list[entities.Task]:
+    async def list_tasks(self, *, user_id: UUID, offset: int = 0, limit: int =5,) -> list[entities.Task]:
         raise NotImplementedError
 
     @abstractmethod
-    async def list_tasks_by_status(self, *, user_id: UUID, status: bool) -> list[entities.Task]:
+    async def list_tasks_by_status(self, *, user_id: UUID, status: bool, offset: int = 0, limit: int = 5) -> list[entities.Task]:
         raise NotImplementedError
 
     @abstractmethod
-    async def update(self, *, user_id: UUID, task_id: UUID, payload: entities.Task) -> entities.Task | None:
+    async def update(self, *, user_id: UUID, task_id: UUID, payload: dict[str, Any]) -> entities.Task | None:
         raise NotImplementedError
 
     @abstractmethod

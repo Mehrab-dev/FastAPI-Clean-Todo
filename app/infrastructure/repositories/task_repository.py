@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from uuid import UUID
+from typing import Any
 
 from app.domain.entities import entities
 from app.infrastructure.database.models import TaskModel
@@ -41,28 +42,28 @@ class SqlalchemyTaskRepository(TaskRepository):
         return  [TaskMapper.to_domain(model) for model in models]
 
 
-    async def list_tasks(self, *, user_id: UUID) -> list[entities.Task]:
+    async def list_tasks(self, *, user_id: UUID, offset: int = 0, limit: int = 5) -> list[entities.Task]:
         statement = select(TaskModel).where(
             TaskModel.user_id == user_id
-        )
+        ).offset(offset=offset).limit(limit=limit)
         result = await self.session.execute(statement=statement)
         models = result.scalars().all()
 
         return [TaskMapper.to_domain(model) for model in models]
 
 
-    async def list_tasks_by_status(self, *, user_id: UUID, status: bool) -> list[entities.Task]:
+    async def list_tasks_by_status(self, *, user_id: UUID, status: bool, offset: int = 0, limit: int = 5) -> list[entities.Task]:
         statement = select(TaskModel).where(
                 TaskModel.user_id == user_id,
                 TaskModel.status == status
-        )
+        ).offset(offset=offset).limit(limit=limit)
         result = await self.session.execute(statement=statement)
         models = result.scalars().all()
 
         return [TaskMapper.to_domain(model) for model in models]
 
 
-    async def update(self, *, user_id: UUID, task_id: UUID, payload: entities.Task) -> entities.Task | None:
+    async def update(self, *, user_id: UUID, task_id: UUID, payload: dict[str, Any]) -> entities.Task | None:
         statement = select(TaskModel).where(
             TaskModel.user_id == user_id,
             TaskModel.id == task_id
@@ -71,9 +72,9 @@ class SqlalchemyTaskRepository(TaskRepository):
         model = result.scalar_one_or_none()
         if model is None:
             return None
-        model.title = payload.title
-        model.description = payload.description
-        model.status = payload.status
+        for field, value in payload.items():
+            if field in {"title", "description", "status"}:
+                setattr(model, field, value)
         try:
             await self.session.commit()
         except Exception:

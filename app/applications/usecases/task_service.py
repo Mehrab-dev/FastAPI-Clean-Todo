@@ -1,5 +1,6 @@
 
 from uuid import UUID
+from typing import Any
 
 from app.domain.repositories.repositories import TaskRepository
 from app.domain.entities import entities
@@ -35,9 +36,11 @@ class TaskService:
     async def list_tasks(
         self,
         *,
+        offset: int = 0,
+        limit: int = 5,
         user_id: UUID
     ) -> list[entities.Task]:
-        return await self.repository.list_tasks(user_id=user_id)
+        return await self.repository.list_tasks(user_id=user_id, offset=offset, limit=limit)
 
 
     # /tasks/list-by-status
@@ -45,9 +48,11 @@ class TaskService:
         self,
         *,
         user_id: UUID,
+        offset: int = 0,
+        limit: int = 5,
         status: bool
     ) -> list[entities.Task]:
-        return await self.repository.list_tasks_by_status(user_id=user_id, status=status)
+        return await self.repository.list_tasks_by_status(user_id=user_id, status=status, offset=offset, limit=limit)
 
 
     # /tasks/update
@@ -56,7 +61,7 @@ class TaskService:
         *,
         user_id: UUID,
         task_id: UUID,
-        payload: entities.Task
+        payload: dict[str, Any]
     ) -> entities.Task | None:
         return await self.repository.update(user_id=user_id, task_id=task_id, payload=payload)
 

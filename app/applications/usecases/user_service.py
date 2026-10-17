@@ -44,7 +44,12 @@ class UserService:
         *,
         id: UUID
     ) -> entities.User | None:
-        return await self.repository.get_by_id(id=id)
+        result = await self.repository.get_by_id(id=id)
+        if result is None:
+            raise ResourceNotFoundError(
+                message="user with this id not found!"
+            )
+        return result
 
 
     # /users/update-email
@@ -54,7 +59,12 @@ class UserService:
         id: UUID,
         email: str
     ) -> entities.User | None:
-        return await self.repository.update_email_by_id(id=id, email=email)
+        result = await self.repository.update_email_by_id(id=id, email=email)
+        if result is None:
+            raise ResourceNotFoundError(
+                message="user with this id not found!"
+            )
+        return result
 
 
     # /users/update-password
@@ -65,7 +75,12 @@ class UserService:
         password: str
     ) -> bool:
         hashed_password = hash_password(password)
-        return await self.repository.update_password_by_id(id=id, new_password=hashed_password)
+        result = await self.repository.update_password_by_id(id=id, new_password=hashed_password)
+        if result is False:
+            raise ResourceNotFoundError(
+                message="user with this id not found!"
+            )
+        return True
 
 
     # /users/delete
@@ -74,4 +89,9 @@ class UserService:
         *,
         id: UUID
     ) -> bool:
-        return await self.repository.delete(id=id)
+        result = await self.repository.delete(id=id)
+        if result is False:
+            raise ResourceNotFoundError(
+                message="user with this id not found!"
+            )
+        return True
